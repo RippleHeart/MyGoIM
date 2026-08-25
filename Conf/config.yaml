@@ -1,0 +1,14 @@
+mysql:
+  user: root
+  password: "006620"
+  host: 127.0.0.1
+  port: 3306
+  db: mygoim
+  MaxIdleConns: 10
+  MaxOpenConns: 300
+
+reids:
+  addr: 127.0.0.1:6379
+  password: ""
+  db: 6
+  PoolSize: 10
