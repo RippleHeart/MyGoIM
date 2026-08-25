@@ -4,7 +4,6 @@ go 1.26.3
 
 require (
 	github.com/gin-gonic/gin v1.12.0
-	github.com/rabbitmq/amqp091-go v1.14.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/spf13/viper v1.21.0
 	gorm.io/driver/mysql v1.6.0

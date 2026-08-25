@@ -1,4 +1,4 @@
-package DBInit
+package DB
 
 import (
 	"gorm.io/gorm"
@@ -6,14 +6,14 @@ import (
 )
 
 type User struct {
-	ID        uint   `gorm:"primaryKey"`
-	Name      string `gorm:"size:64;not null"`
-	Password  string `gorm:"size:255;not null"`
-	Online    bool   `gorm:"default:false"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-
-	GroupUsers []GroupUser `gorm:"foreignKey:UserID"`
+	ID         uint   `gorm:"primaryKey"`
+	Name       string `gorm:"size:64;not null"`
+	Password   string `gorm:"size:255;not null"`
+	Online     bool   `gorm:"default:false"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	UserInfo   *UserInfo    `gorm:"foreignKey:UserID;references:ID"`
+	GroupUsers []*GroupUser `gorm:"foreignKey:UserID"`
 }
 
 // 一对一附属信息（UserID 既是主键又是外键）
@@ -28,7 +28,7 @@ type UserInfo struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	User User `gorm:"foreignKey:UserID;references:ID"`
+	User *User `gorm:"foreignKey:UserID;references:ID"`
 }
 
 type Group struct {
@@ -39,9 +39,9 @@ type Group struct {
 
 	OwnerID uint   `gorm:"not null;comment:群主ID"`
 	Name    string `gorm:"size:100;not null"`
-	Owner   User   `gorm:"foreignKey:OwnerID;references:ID"`
+	Owner   *User  `gorm:"foreignKey:OwnerID;references:ID"`
 
-	GroupUsers []GroupUser `gorm:"foreignKey:GroupID"`
+	GroupUsers []*GroupUser `gorm:"foreignKey:GroupID"`
 }
 
 // 中间表
@@ -54,8 +54,8 @@ type UserUser struct {
 	UpdatedAt time.Time
 
 	// 关联字段
-	Active  User `gorm:"foreignKey:ActiveID;references:ID"`
-	Passive User `gorm:"foreignKey:PassiveID;references:ID"`
+	Active  *User `gorm:"foreignKey:ActiveID;references:ID"`
+	Passive *User `gorm:"foreignKey:PassiveID;references:ID"`
 }
 
 // 群成员表
@@ -67,6 +67,6 @@ type GroupUser struct {
 	UpdatedAt time.Time
 
 	// 关联字段
-	Group Group `gorm:"foreignKey:GroupID;references:ID"`
-	User  User  `gorm:"foreignKey:UserID;references:ID"`
+	Group *Group `gorm:"foreignKey:GroupID;references:ID"`
+	User  *User  `gorm:"foreignKey:UserID;references:ID"`
 }

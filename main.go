@@ -2,11 +2,13 @@ package main
 
 import (
 	"mygoim/Conf"
-	"mygoim/DBInit"
+	"mygoim/DB"
+	"mygoim/Routers"
 )
 
 func main() {
 	Conf.LoadConfig()
-	DBInit.InitMySQl()
-	DBInit.InitRedis()
+	DB.InitMySQL()
+	DB.InitRedis()
+	Routers.InitRouters()
 }

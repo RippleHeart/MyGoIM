@@ -1,4 +1,4 @@
-package DBInit
+package DB
 
 import (
 	"context"

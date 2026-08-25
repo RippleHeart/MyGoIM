@@ -2,11 +2,17 @@ package Routers
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"mygoim/Handlers"
 )
 
-func InitRouters() error {
+func InitRouters() {
 	Engine := gin.Default()
 	Engine.POST("/login", Handlers.Login)
+	Engine.POST("/register", Handlers.Register)
 
+	err := Engine.Run("localhost:8080")
+	if err != nil {
+		log.Fatal("Engine.Run: ", err)
+	}
 }

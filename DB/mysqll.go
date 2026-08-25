@@ -1,4 +1,4 @@
-package DBInit
+package DB
 
 import (
 	"fmt"
@@ -9,22 +9,22 @@ import (
 	"mygoim/Conf"
 )
 
-func InitMySQl() {
+var MySQL *gorm.DB
 
-	db, err := gorm.Open(mysql.Open(Conf.DSN), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+func InitMySQL() {
+	var err error
+	MySQL, err = gorm.Open(mysql.Open(Conf.DSN), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
 	if err != nil {
 		log.Fatal("MySQL连接失败:", err)
 	}
-
-	sqlDB, err := db.DB()
+	sqlDB, err := MySQL.DB() // ← 注意这里是 MySQl（你的拼写）
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer sqlDB.Close()
 	log.Println("MySQL连接成功")
 	sqlDB.SetMaxIdleConns(Conf.Conf.M.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(Conf.Conf.M.MaxOpenConns)
-	err = db.AutoMigrate(
+	err = MySQL.AutoMigrate(
 		&User{},      // 先建主表
 		&UserInfo{},  // 一对一依赖 User
 		&Group{},     // 主表
