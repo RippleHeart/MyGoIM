@@ -1,0 +1,135 @@
+package Websocket
+
+import (
+	"encoding/json"
+	"github.com/gorilla/websocket"
+	"log"
+	"net/http"
+	"time"
+)
+
+func NewHub() *Hub {
+	return &Hub{
+		Clients:    make(map[uint]*Client),
+		Register:   make(chan *Client),
+		Unregister: make(chan *Client),
+		Broadcast:  make(chan Message, 256),
+	}
+}
+
+func (h *Hub) Run() {
+	for {
+		select {
+		case client := <-h.Register:
+			h.mu.Lock()
+			h.Clients[client.ID] = client
+			h.mu.Unlock()
+			log.Printf("用户 %s 上线，当前在线: %d", client.Name, len(h.Clients))
+
+		case client := <-h.Unregister:
+			h.mu.Lock()
+			if _, ok := h.Clients[client.ID]; ok {
+				delete(h.Clients, client.ID)
+				close(client.Send)
+			}
+			h.mu.Unlock()
+			log.Printf("用户 %s 下线，当前在线: %d", client.Name, len(h.Clients))
+
+		case msg := <-h.Broadcast:
+			data, _ := json.Marshal(msg)
+			h.mu.RLock()
+			for _, client := range h.Clients {
+				select {
+				case client.Send <- data:
+				default:
+					// 发送缓冲区满，关闭连接
+					close(client.Send)
+				}
+			}
+			h.mu.RUnlock()
+		}
+	}
+}
+
+// ReadPump 持续读取客户端消息
+func (c *Client) ReadPump() {
+	defer func() {
+		c.Hub.Unregister <- c
+		c.Conn.Close()
+	}()
+
+	c.Conn.SetReadLimit(512 * 1024) // 最大消息 512KB
+	// 设置心跳检测（Pong 响应）
+	c.Conn.SetPongHandler(func(string) error {
+		c.Conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
+
+	for {
+		_, message, err := c.Conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("读取错误: %v", err)
+			}
+			break
+		}
+
+		var msg Message
+		if err := json.Unmarshal(message, &msg); err != nil {
+			continue
+		}
+		msg.From = c.ID
+		msg.Timestamp = time.Now().Unix()
+
+		// 根据消息类型路由
+		switch msg.Type {
+		case "private":
+			c.Hub.SendPrivate(msg)
+		default:
+			c.Hub.Broadcast <- msg
+		}
+	}
+}
+
+// WritePump 持续向客户端写入消息
+func (c *Client) WritePump() {
+	ticker := time.NewTicker(54 * time.Second) // 心跳间隔
+	defer func() {
+		ticker.Stop()
+		c.Conn.Close()
+	}()
+
+	for {
+		select {
+		case message, ok := <-c.Send:
+			c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			if !ok {
+				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+			c.Conn.WriteMessage(websocket.TextMessage, message)
+
+		case <-ticker.C:
+			c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+		}
+	}
+}
+
+// SendPrivate 点对点发送
+func (h *Hub) SendPrivate(msg Message) {
+	data, _ := json.Marshal(msg)
+	h.mu.RLock()
+	target, ok := h.Clients[msg.To]
+	h.mu.RUnlock()
+
+	if ok {
+		select {
+		case target.Send <- data:
+		default:
+			close(target.Send)
+		}
+	}
+}
