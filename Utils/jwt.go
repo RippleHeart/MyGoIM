@@ -1,0 +1,44 @@
+package Utils
+
+import (
+	"errors"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"log"
+	"mygoim/Conf"
+	"time"
+)
+
+var MySecret = []byte(Conf.Conf.J.Secret)
+
+func (f *LoginForm) CreateJWT() string {
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
+		Issuer:    "RippleHeart",
+		Subject:   "OK",
+		Audience:  []string{f.Username},
+		ID:        uuid.NewString(),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 19)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+	})
+	tokenStr, err := token.SignedString(MySecret)
+	if err != nil {
+		log.Println("token.SignedString error: ", err)
+		return ""
+	}
+	return tokenStr
+}
+func (t *JWToken) VerifyJWT() bool {
+	tokenParse, err := jwt.Parse(t.Token, func(token *jwt.Token) (any, error) {
+		if token.Method == jwt.SigningMethodHS256 {
+			return MySecret, nil
+		}
+		return nil, errors.New("error parse method")
+	}, jwt.WithValidMethods([]string{"HS256"}))
+	if tokenParse == nil || !tokenParse.Valid || err != nil {
+		return false
+	}
+
+	return true
+
+}

@@ -12,3 +12,6 @@ reids:
   password: ""
   db: 6
   PoolSize: 10
+
+JWT:
+  secret: "Ononoki"

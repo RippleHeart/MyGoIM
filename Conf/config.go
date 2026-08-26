@@ -9,6 +9,10 @@ import (
 type Config struct {
 	M MySQLConfig `mapstructure:"mysql"`
 	R RedisConfig `mapstructure:"redis"`
+	J JWTConfig   `mapstructure:"JWT"`
+}
+type JWTConfig struct {
+	Secret string `mapstructure:"secret"`
 }
 type MySQLConfig struct {
 	Host         string `mapstructure:"host"`
