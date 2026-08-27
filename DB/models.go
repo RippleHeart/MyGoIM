@@ -6,12 +6,9 @@ import (
 )
 
 type User struct {
-	ID         uint   `gorm:"primaryKey"`
-	Name       string `gorm:"size:64;not null"`
-	Password   string `gorm:"size:255;not null"`
-	Online     bool   `gorm:"default:false"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID         uint         `gorm:"primaryKey"`
+	Name       string       `gorm:"size:64;not null"`
+	Password   string       `gorm:"size:255;not null"`
 	UserInfo   *UserInfo    `gorm:"foreignKey:UserID;references:ID"`
 	GroupUsers []*GroupUser `gorm:"foreignKey:UserID"`
 }

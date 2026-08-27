@@ -10,8 +10,9 @@ import (
 
 func VerifyJWT(c *gin.Context) {
 	var JWTRecv Utils.JWToken
-	var userID uint
-
+	var userID struct {
+		ID uint
+	}
 	JWTRecv.Token = c.GetHeader("JWT")
 	username, ok := JWTRecv.VerifyJWT()
 	nameParam := c.Param("name")
@@ -21,9 +22,9 @@ func VerifyJWT(c *gin.Context) {
 		return
 	}
 
-	DB.MySQL.Select("id").Where("name = ?", username).First(&userID)
+	DB.MySQL.Table("users").Select("id").Where("name = ?", username).First(&userID)
 	fmt.Println(userID)
-	c.Set("ID", userID)
+	c.Set("ID", userID.ID)
 	c.Set("name", username)
 	c.Next()
 }

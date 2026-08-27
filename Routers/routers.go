@@ -13,6 +13,8 @@ func InitRouters() {
 	UserRG := Engine.Group("/user/:name", Handlers.VerifyJWT)
 	UserRG.Use()
 	{
+		UserRG.GET("/friends", Handlers.GetFriends)
+		UserRG.POST("/friends", Handlers.AddFriend)
 		UserRG.GET("/chat", Handlers.WSUpgrade)
 		UserRG.GET("/hello", Handlers.Hello)
 	}
