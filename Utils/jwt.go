@@ -28,7 +28,7 @@ func (f *LoginForm) CreateJWT() string {
 	}
 	return tokenStr
 }
-func (t *JWToken) VerifyJWT() bool {
+func (t *JWToken) VerifyJWT() (string, bool) {
 	tokenParse, err := jwt.Parse(t.Token, func(token *jwt.Token) (any, error) {
 		if token.Method == jwt.SigningMethodHS256 {
 			return MySecret, nil
@@ -36,9 +36,11 @@ func (t *JWToken) VerifyJWT() bool {
 		return nil, errors.New("error parse method")
 	}, jwt.WithValidMethods([]string{"HS256"}))
 	if tokenParse == nil || !tokenParse.Valid || err != nil {
-		return false
+		return "", false
 	}
-
-	return true
-
+	audience, err := tokenParse.Claims.GetAudience()
+	if err != nil {
+		return "", false
+	}
+	return audience[0], true
 }

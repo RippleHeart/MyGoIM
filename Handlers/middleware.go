@@ -1,18 +1,29 @@
 package Handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"mygoim/DB"
 	"mygoim/Utils"
 	"net/http"
 )
 
 func VerifyJWT(c *gin.Context) {
 	var JWTRecv Utils.JWToken
+	var userID uint
+
 	JWTRecv.Token = c.GetHeader("JWT")
-	if !JWTRecv.VerifyJWT() {
+	username, ok := JWTRecv.VerifyJWT()
+	nameParam := c.Param("name")
+	if !ok || nameParam != username {
 		c.JSON(http.StatusOK, gin.H{"code": "101", "msg": "NO Auth!"})
 		c.Abort()
 		return
 	}
+
+	DB.MySQL.Select("id").Where("name = ?", username).First(&userID)
+	fmt.Println(userID)
+	c.Set("ID", userID)
+	c.Set("name", username)
 	c.Next()
 }

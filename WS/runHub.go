@@ -1,16 +1,22 @@
-package Websocket
+package WS
 
 import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
-	"net/http"
+
 	"time"
 )
 
+var H *Hub
+
+func InitHub() {
+	H = NewHub()
+	go H.Run()
+}
 func NewHub() *Hub {
 	return &Hub{
-		Clients:    make(map[uint]*Client),
+		Clients:    make(map[string]*Client),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		Broadcast:  make(chan Message, 256),
@@ -22,14 +28,14 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.mu.Lock()
-			h.Clients[client.ID] = client
+			h.Clients[client.Name] = client
 			h.mu.Unlock()
 			log.Printf("用户 %s 上线，当前在线: %d", client.Name, len(h.Clients))
 
 		case client := <-h.Unregister:
 			h.mu.Lock()
-			if _, ok := h.Clients[client.ID]; ok {
-				delete(h.Clients, client.ID)
+			if _, ok := h.Clients[client.Name]; ok {
+				delete(h.Clients, client.Name)
 				close(client.Send)
 			}
 			h.mu.Unlock()
@@ -78,14 +84,16 @@ func (c *Client) ReadPump() {
 		if err := json.Unmarshal(message, &msg); err != nil {
 			continue
 		}
-		msg.From = c.ID
+		msg.From = c.Name
 		msg.Timestamp = time.Now().Unix()
 
 		// 根据消息类型路由
 		switch msg.Type {
 		case "private":
 			c.Hub.SendPrivate(msg)
-		default:
+		case "group":
+			c.Hub.SendGroup(msg)
+		case "system":
 			c.Hub.Broadcast <- msg
 		}
 	}
@@ -120,6 +128,20 @@ func (c *Client) WritePump() {
 
 // SendPrivate 点对点发送
 func (h *Hub) SendPrivate(msg Message) {
+	data, _ := json.Marshal(msg)
+	h.mu.RLock()
+	target, ok := h.Clients[msg.To]
+	h.mu.RUnlock()
+
+	if ok {
+		select {
+		case target.Send <- data:
+		default:
+			close(target.Send)
+		}
+	}
+}
+func (h *Hub) SendGroup(msg Message) {
 	data, _ := json.Marshal(msg)
 	h.mu.RLock()
 	target, ok := h.Clients[msg.To]

@@ -10,6 +10,11 @@ type Config struct {
 	M MySQLConfig `mapstructure:"mysql"`
 	R RedisConfig `mapstructure:"redis"`
 	J JWTConfig   `mapstructure:"JWT"`
+	W WSConfig    `mapstructure:"WS"`
+}
+type WSConfig struct {
+	ReadBufferSize  int `mapstructure:"ReadBufferSize"`
+	WriteBufferSize int `mapstructure:"WriteBufferSize"`
 }
 type JWTConfig struct {
 	Secret string `mapstructure:"secret"`

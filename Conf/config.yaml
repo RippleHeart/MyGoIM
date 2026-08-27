@@ -15,3 +15,7 @@ reids:
 
 JWT:
   secret: "Ononoki"
+
+WS:
+  ReadBufferSize: 1024
+  WriteBufferSize: 1024
