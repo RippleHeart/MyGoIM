@@ -5,16 +5,15 @@ import "errors"
 func QueryFrdAll(userID uint) []User {
 	var result []User
 	MySQL.
-		Raw("select b.name, b.id from users a,users b,user_users c where a.id=? and ((a.id=c.active_id and b.id =c.passive_id) or  (b.id=c.active_id and a.id =c.passive_id))", userID).
+		Raw("select b.name, b.id from users a,users b,user_users c where c.break=0 and a.id=? and ((a.id=c.active_id and b.id =c.passive_id) or  (b.id=c.active_id and a.id =c.passive_id))", userID).
 		Find(&result)
 	return result
 }
 func QueryFrd(ID, frdID uint) User {
 	var result User
-	MySQL.Table("user_users").
-		Where("((active_id = ? AND passive_id = ?) OR (active_id = ? AND passive_id = ?)) AND Break = ?",
-			ID, frdID, frdID, ID, false).
-		First(&result)
+	MySQL.
+		Raw("select a.name, a.id from users a,user_users c where c.break=0 and a.id=? and ((c.active_id=? and c.passive_id=?) or  (c.active_id=? and c.passive_id=?))", frdID, ID, frdID, frdID, ID).
+		Find(&result)
 	return result
 }
 func QueryUser(input any) (User, error) {

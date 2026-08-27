@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"log"
+	"mygoim/DB"
 
 	"time"
 )
@@ -85,6 +86,7 @@ func (c *Client) ReadPump() {
 			continue
 		}
 		msg.From = c.Name
+		msg.ID = c.ID
 		msg.Timestamp = time.Now().Unix()
 
 		// 根据消息类型路由
@@ -127,22 +129,48 @@ func (c *Client) WritePump() {
 }
 
 func (h *Hub) SendPrivate(msg Message) {
-	//todo 优化单发逻辑
-	data, _ := json.Marshal(msg)
-	h.mu.RLock()
-	target, ok := h.Clients[msg.To]
-	h.mu.RUnlock()
-
-	if ok {
-		select {
-		case target.Send <- data:
-		default:
-			close(target.Send)
+	var frd DB.User
+	userTo, _ := DB.QueryUser(msg.To)
+	if userTo.ID != 0 {
+		frd = DB.QueryFrd(msg.ID, userTo.ID)
+	}
+	if frd.ID == 0 {
+		h.mu.RLock()
+		target, ok := h.Clients[msg.From]
+		h.mu.RUnlock()
+		data, _ := json.Marshal(NewSystemMsg("对方不是你的好友", msg.From))
+		if ok {
+			select {
+			case target.Send <- data:
+			default:
+				close(target.Send)
+			}
+		}
+	} else {
+		data, _ := json.Marshal(msg)
+		h.mu.RLock()
+		target, ok := h.Clients[msg.To]
+		h.mu.RUnlock()
+		if ok {
+			select {
+			case target.Send <- data:
+			default:
+				close(target.Send)
+			}
 		}
 	}
 }
-
 func (h *Hub) SendGroup(msg Message) {
 	//todo  完善群发逻辑
 
+}
+func NewSystemMsg(content string, to string) *Message {
+	return &Message{
+		Type:      "system",
+		From:      "system",
+		ID:        0,
+		To:        to,
+		Content:   content,
+		Timestamp: time.Now().Unix(),
+	}
 }

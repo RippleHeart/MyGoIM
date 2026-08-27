@@ -8,9 +8,10 @@ import (
 )
 
 type Message struct {
-	Type      string `json:"type"`      //  "private" | "system" | "group"
-	From      string `json:"from"`      // 发送者ID
-	To        string `json:"to"`        // 接收者ID（私聊用）
+	Type      string `json:"type"` //  "private" | "system" | "group"
+	From      string `json:"from"` // 发送者
+	ID        uint   `json:"id"`
+	To        string `json:"to"`        // 接收者
 	Content   string `json:"content"`   // 消息内容
 	Timestamp int64  `json:"timestamp"` // 时间戳
 }
