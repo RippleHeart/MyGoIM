@@ -1,7 +1,6 @@
 package Handlers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"mygoim/DB"
 	"mygoim/Utils"
@@ -10,9 +9,6 @@ import (
 
 func VerifyJWT(c *gin.Context) {
 	var JWTRecv Utils.JWToken
-	var userID struct {
-		ID uint
-	}
 	JWTRecv.Token = c.GetHeader("JWT")
 	username, ok := JWTRecv.VerifyJWT()
 	nameParam := c.Param("name")
@@ -21,10 +17,13 @@ func VerifyJWT(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-	DB.MySQL.Table("users").Select("id").Where("name = ?", username).First(&userID)
-	fmt.Println(userID)
-	c.Set("ID", userID.ID)
+	user, err := DB.QueryUser(username)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": "101", "msg": err.Error()})
+		c.Abort()
+		return
+	}
+	c.Set("ID", user.ID)
 	c.Set("name", username)
 	c.Next()
 }

@@ -45,7 +45,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	postform.Password = hashPwd
-	err = DB.MySQL.Table("users").Create(&postform).Error
+	err = DB.InsertUser(postform.Username, postform.Password)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": "100", "error": "Try again3!"})
 		return

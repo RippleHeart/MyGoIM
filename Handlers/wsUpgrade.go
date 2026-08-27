@@ -16,10 +16,10 @@ func WSUpgrade(c *gin.Context) {
 		return
 	}
 	userID, _ := c.Get("ID")
-	username, _ := c.Get("name")
+	userName, _ := c.Get("name")
 	client := &WS.Client{
 		ID:   userID.(uint),
-		Name: username.(string),
+		Name: userName.(string),
 		Hub:  WS.H,
 		Conn: conn,
 		Send: make(chan []byte, 256),

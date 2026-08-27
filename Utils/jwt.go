@@ -18,7 +18,7 @@ func (f *LoginForm) CreateJWT() string {
 		Subject:   "OK",
 		Audience:  []string{f.Username},
 		ID:        uuid.NewString(),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 19)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * time.Duration(Conf.Conf.J.TTL))),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	})
 	tokenStr, err := token.SignedString(MySecret)

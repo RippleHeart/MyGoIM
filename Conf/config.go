@@ -18,6 +18,7 @@ type WSConfig struct {
 }
 type JWTConfig struct {
 	Secret string `mapstructure:"secret"`
+	TTL    int    `mapstructure:"ttl"`
 }
 type MySQLConfig struct {
 	Host         string `mapstructure:"host"`

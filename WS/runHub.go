@@ -126,8 +126,8 @@ func (c *Client) WritePump() {
 	}
 }
 
-// SendPrivate 点对点发送
 func (h *Hub) SendPrivate(msg Message) {
+	//todo 优化单发逻辑
 	data, _ := json.Marshal(msg)
 	h.mu.RLock()
 	target, ok := h.Clients[msg.To]
@@ -141,17 +141,8 @@ func (h *Hub) SendPrivate(msg Message) {
 		}
 	}
 }
-func (h *Hub) SendGroup(msg Message) {
-	data, _ := json.Marshal(msg)
-	h.mu.RLock()
-	target, ok := h.Clients[msg.To]
-	h.mu.RUnlock()
 
-	if ok {
-		select {
-		case target.Send <- data:
-		default:
-			close(target.Send)
-		}
-	}
+func (h *Hub) SendGroup(msg Message) {
+	//todo  完善群发逻辑
+
 }

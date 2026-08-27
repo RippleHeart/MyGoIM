@@ -15,9 +15,9 @@ func (f *LoginForm) CreateHashPwd() (hashPwd string, err error) {
 	return string(hashPwdTep), nil
 }
 func (f *LoginForm) VerifyPwd() (OK bool) {
-	var verify LoginForm
-	DB.MySQL.Table("users").Select("password").Where("name=?", f.Username).First(&verify)
-	err := bcrypt.CompareHashAndPassword([]byte(verify.Password), []byte(f.Password))
+
+	user := DB.QueryPwd(f.Username)
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(f.Password))
 	if err != nil {
 		return false
 	}
