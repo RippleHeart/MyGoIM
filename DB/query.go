@@ -33,3 +33,21 @@ func QueryPwd(input string) User {
 	MySQL.Table("users").Select("password").Where("name=?", input).First(&result)
 	return result
 }
+func QueryGroupID(input string) Group {
+	var result Group
+	MySQL.Table("groups").Select("ID").Where("group_name=?", input).First(&result)
+	return result
+}
+func QueryMemberAll(groupName string) []User {
+	var result []User
+
+	groupID := QueryGroupID(groupName).ID
+	if groupID == 0 {
+		return result
+	}
+	MySQL.
+		Raw("select a.name, a.id from users a,`groups` b,group_users c where c.break=0 and b.id=? and b.id=c.group_id and a.id=c.user_id ",
+			groupID).
+		Find(&result)
+	return result
+}

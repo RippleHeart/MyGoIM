@@ -16,8 +16,10 @@ func InitRouters() {
 		UserRG.GET("/friends", Handlers.GetFriends)
 		UserRG.POST("/friends", Handlers.AddFriend)
 
+		UserRG.PATCH("/group/:groupname", Handlers.CreateGroup)
+		UserRG.POST("/group/:groupname", Handlers.EnterGroup)
+		UserRG.GET("/group/:groupname", Handlers.GetMembers)
 		UserRG.GET("/hello", Handlers.Hello)
-		UserRG.Group("/chat")
 		UserRG.GET("/chat", Handlers.WSUpgrade)
 	}
 	err := Engine.Run("localhost:8080")

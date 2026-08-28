@@ -8,9 +8,9 @@ import (
 type User struct {
 	ID         uint         `gorm:"primaryKey"`
 	Name       string       `gorm:"size:64;not null"`
-	Password   string       `gorm:"size:255;not null"`
-	UserInfo   *UserInfo    `gorm:"foreignKey:UserID;references:ID"`
-	GroupUsers []*GroupUser `gorm:"foreignKey:UserID"`
+	Password   string       `gorm:"size:255;not null" json:"password,omitempty"`
+	UserInfo   *UserInfo    `gorm:"foreignKey:UserID;references:ID"  json:"-"`
+	GroupUsers []*GroupUser `gorm:"foreignKey:UserID" json:"-"`
 }
 
 // 一对一附属信息（UserID 既是主键又是外键）
@@ -29,14 +29,11 @@ type UserInfo struct {
 }
 
 type Group struct {
-	ID        uint `gorm:"primaryKey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-
-	OwnerID uint   `gorm:"not null;comment:群主ID"`
-	Name    string `gorm:"size:100;not null"`
-	Owner   *User  `gorm:"foreignKey:OwnerID;references:ID"`
+	gorm.Model
+	GroupName string `gorm:"size:100;not null"`
+	OwnerID   uint   `gorm:"not null;comment:群主ID"`
+	OwnerName string `gorm:"size:100;not null"`
+	Owner     *User  `gorm:"foreignKey:OwnerID;references:ID"`
 
 	GroupUsers []*GroupUser `gorm:"foreignKey:GroupID"`
 }

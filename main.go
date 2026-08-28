@@ -13,4 +13,5 @@ func main() {
 	DB.InitRedis()
 	WS.InitHub()
 	Routers.InitRouters()
+
 }
