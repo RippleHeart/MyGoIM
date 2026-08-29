@@ -2,6 +2,7 @@ package WS
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/rabbitmq/amqp091-go"
 	"mygoim/Conf"
 	"net/http"
 	"sync"
@@ -18,11 +19,14 @@ type Message struct {
 
 // Client 代表一个 WebSocket 连接
 type Client struct {
-	ID   uint
-	Name string
-	Conn *websocket.Conn
-	Send chan []byte // 待发送的消息队列
-	Hub  *Hub
+	Close chan struct{}
+	ID    uint
+	Name  string
+	Queue amqp091.Queue
+	Conn  *websocket.Conn
+	MQCh  *amqp091.Channel
+	Send  chan []byte // 待发送的消息队列
+	Hub   *Hub
 }
 
 // Hub 管理所有客户端连接

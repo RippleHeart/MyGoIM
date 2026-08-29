@@ -7,10 +7,17 @@ import (
 )
 
 type Config struct {
-	M MySQLConfig `mapstructure:"mysql"`
-	R RedisConfig `mapstructure:"redis"`
-	J JWTConfig   `mapstructure:"JWT"`
-	W WSConfig    `mapstructure:"WS"`
+	M  MySQLConfig `mapstructure:"mysql"`
+	R  RedisConfig `mapstructure:"redis"`
+	J  JWTConfig   `mapstructure:"JWT"`
+	W  WSConfig    `mapstructure:"WS"`
+	MQ MQConfig    `mapstructure:"rabbitMQ"`
+}
+type MQConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     string `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
 }
 type WSConfig struct {
 	ReadBufferSize  int `mapstructure:"ReadBufferSize"`
@@ -38,6 +45,7 @@ type RedisConfig struct {
 
 var Conf Config
 var DSN string
+var MQURL string
 
 func LoadConfig() {
 	viper.SetConfigName("config")
@@ -53,5 +61,6 @@ func LoadConfig() {
 	}
 
 	DSN = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", Conf.M.User, Conf.M.Password, Conf.M.Host, Conf.M.Port, Conf.M.DB)
-	//fmt.Println("DSN:", DSN)
+	MQURL = fmt.Sprintf("amqp://%s:%s@%s:%s/", Conf.MQ.User, Conf.MQ.Password, Conf.MQ.Host, Conf.MQ.Port)
+	log.Println("读取配置成功")
 }

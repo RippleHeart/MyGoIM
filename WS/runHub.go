@@ -12,6 +12,7 @@ var H *Hub
 func InitHub() {
 	H = NewHub()
 	go H.Run()
+	log.Println("WS集中管理器Hub创建成功")
 }
 func NewHub() *Hub {
 	return &Hub{
@@ -34,8 +35,11 @@ func (h *Hub) Run() {
 		case client := <-h.Unregister:
 			h.mu.Lock()
 			if _, ok := h.Clients[client.Name]; ok {
+				close(client.Close)
+				client.MQCh.Close()
 				delete(h.Clients, client.Name)
 				close(client.Send)
+
 			}
 			h.mu.Unlock()
 			log.Printf("用户 %s 下线，当前在线: %d", client.Name, len(h.Clients))
@@ -90,7 +94,7 @@ func (c *Client) ReadPump() {
 		// 根据消息类型路由
 		switch msg.Type {
 		case "private":
-			c.Hub.SendPrivate(msg)
+			c.SendPrivate(msg)
 		case "group":
 			c.Hub.SendGroup(msg)
 		case "system":

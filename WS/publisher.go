@@ -1,0 +1,20 @@
+package WS
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/rabbitmq/amqp091-go"
+)
+
+func (c *Client) PublishPrivate(msg Message) error {
+	data, _ := json.Marshal(msg)
+	err := c.MQCh.Publish("private", msg.To, false, false,
+		amqp091.Publishing{
+			Body: []byte(data),
+		})
+	if err != nil {
+		return err
+	}
+	fmt.Println("publish成功")
+	return nil
+}

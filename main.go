@@ -12,6 +12,7 @@ func main() {
 	DB.InitMySQL()
 	DB.InitRedis()
 	WS.InitHub()
+	WS.InitMQ()
 	Routers.InitRouters()
 
 }
