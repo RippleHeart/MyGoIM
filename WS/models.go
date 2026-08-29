@@ -9,33 +9,31 @@ import (
 )
 
 type Message struct {
-	Type      string `json:"type"` //  "private" | "system" | "group"
-	From      string `json:"from"` // 发送者
-	ID        uint   `json:"id"`
-	To        string `json:"to"`        // 接收者
-	Content   string `json:"content"`   // 消息内容
-	Timestamp int64  `json:"timestamp"` // 时间戳
+	Type      string `json:"type"` // 消息类型 "private" | "system" | "group"
+	From      string `json:"from"`
+	ID        uint   `json:"id"` // 发送者ID
+	To        string `json:"to"`
+	Content   string `json:"content"`
+	Timestamp int64  `json:"timestamp"` // 发送时间戳
 }
-
-// Client 代表一个 WebSocket 连接
 type Client struct {
 	Close chan struct{}
 	ID    uint
 	Name  string
-	Queue amqp091.Queue
-	Conn  *websocket.Conn
-	MQCh  *amqp091.Channel
-	Send  chan []byte // 待发送的消息队列
+	Conn  *websocket.Conn  // WS连接
+	Queue amqp091.Queue    // 客户端持有的队列
+	MQCh  *amqp091.Channel // 客户端持有的AMQP信道
+	Send  chan []byte      // 发送消息队列
 	Hub   *Hub
 }
 
 // Hub 管理所有客户端连接
 type Hub struct {
-	Clients    map[string]*Client // userID -> Client
-	Register   chan *Client       // 新连接注册
-	Unregister chan *Client       // 连接断开注销
-	Broadcast  chan Message       // 广播消息
-	mu         sync.RWMutex       // 保护 Clients map
+	Clients    map[string]*Client // 在线客户端集合
+	Register   chan *Client       // 连接注册Chan
+	Unregister chan *Client       // 连接断开Chan
+	Broadcast  chan Message       // 广播消息Chan
+	mu         sync.RWMutex       // 保护 Clients 集合
 }
 
 var Upgrader = websocket.Upgrader{

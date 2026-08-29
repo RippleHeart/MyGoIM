@@ -16,7 +16,7 @@ func InitMySQL() {
 	if err != nil {
 		log.Fatal("MySQL连接失败:", err)
 	}
-	sqlDB, err := MySQL.DB() // ← 注意这里是 MySQl（你的拼写）
+	sqlDB, err := MySQL.DB()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,14 +24,14 @@ func InitMySQL() {
 	sqlDB.SetMaxIdleConns(Conf.Conf.M.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(Conf.Conf.M.MaxOpenConns)
 	//err = MySQL.AutoMigrate(
-	//	&User{},      // 先建主表
-	//	&UserInfo{},  // 一对一依赖 User
-	//	&Group{},     // 主表
-	//	&UserUser{},  // 中间表依赖 User
-	//	&GroupUser{}, // 中间表依赖 User + Group
+	//	&User{},
+	//	&UserInfo{},
+	//	&Group{},
+	//	&UserUser{},
+	//	&GroupUser{},
 	//)
-	if err != nil {
-		log.Fatal("建表失败:", err)
-	}
+	//if err != nil {
+	//log.Fatal("建表失败:", err)
+	//}
 
 }

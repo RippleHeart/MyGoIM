@@ -26,24 +26,27 @@ func NewHub() *Hub {
 func (h *Hub) Run() {
 	for {
 		select {
+		//上线
 		case client := <-h.Register:
 			h.mu.Lock()
 			h.Clients[client.Name] = client
 			h.mu.Unlock()
 			log.Printf("用户 %s 上线，当前在线: %d", client.Name, len(h.Clients))
 
+		//下线
 		case client := <-h.Unregister:
 			h.mu.Lock()
 			if _, ok := h.Clients[client.Name]; ok {
-				close(client.Close)
-				client.MQCh.Close()
-				delete(h.Clients, client.Name)
-				close(client.Send)
-
+				//NOTE:   下线后处理
+				close(client.Close)            //关闭通道，通知子协程死亡
+				client.MQCh.Close()            //关闭AMQP信道，防止出现僵尸消费者
+				delete(h.Clients, client.Name) //从Hub中删除对应Client连接
+				close(client.Send)             //关闭发送消息发送通道
 			}
 			h.mu.Unlock()
 			log.Printf("用户 %s 下线，当前在线: %d", client.Name, len(h.Clients))
 
+		//广播
 		case msg := <-h.Broadcast:
 			data, _ := json.Marshal(msg)
 			h.mu.RLock()
@@ -127,16 +130,5 @@ func (c *Client) WritePump() {
 				return
 			}
 		}
-	}
-}
-
-func NewSystemMsg(content string, to string) *Message {
-	return &Message{
-		Type:      "system",
-		From:      "system",
-		ID:        0,
-		To:        to,
-		Content:   content,
-		Timestamp: time.Now().Unix(),
 	}
 }

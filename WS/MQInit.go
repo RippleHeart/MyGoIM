@@ -19,6 +19,7 @@ func InitMQ() {
 	if err != nil {
 		log.Fatal("channel信道创建失败")
 	}
+	//声明不同种类消息对应的交换机
 	err = ch.ExchangeDeclare("private", "direct", true, false, false, false, nil)
 	if err != nil {
 		log.Fatal("private交换机创建失败")

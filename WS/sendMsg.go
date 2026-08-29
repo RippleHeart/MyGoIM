@@ -2,8 +2,8 @@ package WS
 
 import (
 	"encoding/json"
-	"fmt"
 	"mygoim/DB"
+	"time"
 )
 
 func (c *Client) SendPrivate(msg Message) {
@@ -13,7 +13,8 @@ func (c *Client) SendPrivate(msg Message) {
 	if userTo.ID != 0 {
 		frd = DB.QueryFrd(msg.ID, userTo.ID)
 	}
-	if frd.ID == 0 { //对象不是好友返回系统消息
+	//对方不是好友返回系统消息
+	if frd.ID == 0 {
 		c.Hub.mu.RLock()
 		target, ok := c.Hub.Clients[msg.From]
 		c.Hub.mu.RUnlock()
@@ -27,12 +28,10 @@ func (c *Client) SendPrivate(msg Message) {
 		}
 		return
 	}
-	//对象是好友
-	//publish到私聊交换机
-	fmt.Println("进入publish")
+	//对象是好友，publish到私聊交换机
 	err := c.PublishPrivate(msg)
-	if err != nil { //发送失败
-		fmt.Println("publish失败")
+	//发送失败
+	if err != nil {
 		c.Hub.mu.RLock()
 		target, ok := c.Hub.Clients[msg.From]
 		c.Hub.mu.RUnlock()
@@ -46,10 +45,10 @@ func (c *Client) SendPrivate(msg Message) {
 		}
 		return
 	}
-
 }
-func (h *Hub) SendGroup(msg Message) {
 
+func (h *Hub) SendGroup(msg Message) {
+	//todo:
 	usersTo := DB.QueryMemberAll(msg.To)
 	for _, user := range usersTo {
 		data, _ := json.Marshal(msg)
@@ -63,5 +62,16 @@ func (h *Hub) SendGroup(msg Message) {
 				close(target.Send)
 			}
 		}
+	}
+}
+
+func NewSystemMsg(content string, to string) *Message {
+	return &Message{
+		Type:      "system",
+		From:      "system",
+		ID:        0,
+		To:        to,
+		Content:   content,
+		Timestamp: time.Now().Unix(),
 	}
 }

@@ -14,5 +14,4 @@ func main() {
 	WS.InitHub()
 	WS.InitMQ()
 	Routers.InitRouters()
-
 }
