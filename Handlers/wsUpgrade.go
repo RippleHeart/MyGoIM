@@ -8,7 +8,7 @@ import (
 )
 
 func WSUpgrade(c *gin.Context) {
-	conn, err := WS.WSUpgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := WS.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, gin.H{"code": "102", "msg": "WS UP ERROR!"})

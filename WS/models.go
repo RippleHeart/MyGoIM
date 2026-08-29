@@ -34,7 +34,7 @@ type Hub struct {
 	mu         sync.RWMutex       // 保护 Clients map
 }
 
-var WSUpgrader = websocket.Upgrader{
+var Upgrader = websocket.Upgrader{
 	ReadBufferSize:  Conf.Conf.W.ReadBufferSize,
 	WriteBufferSize: Conf.Conf.W.WriteBufferSize,
 	CheckOrigin: func(r *http.Request) bool {
