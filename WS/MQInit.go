@@ -24,6 +24,10 @@ func InitMQ() {
 	if err != nil {
 		log.Fatal("private交换机创建失败")
 	}
+	err = ch.ExchangeDeclare("group", "direct", true, false, false, false, nil)
+	if err != nil {
+		log.Fatal("group交换机创建失败")
+	}
 
 }
 func NewChannel() (*amqp091.Channel, error) {

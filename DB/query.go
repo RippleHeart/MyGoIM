@@ -51,3 +51,26 @@ func QueryMemberAll(groupName string) []User {
 		Find(&result)
 	return result
 }
+
+func QueryMember(userName, groupName string) User {
+	var result User
+
+	groupID := QueryGroupID(groupName).ID
+	if groupID == 0 {
+		return result
+	}
+	MySQL.
+		Raw("select a.name, a.id from users a,group_users c where c.break=0 and c.group_id=? and a.id=c.user_id and a.name=?",
+			groupID, userName).
+		Find(&result)
+	return result
+}
+func QueryMyGroup(input uint) []Group {
+	var result []Group
+
+	MySQL.
+		Raw("select b.group_name, b.id from users a,`groups` b,group_users c where c.break=0 and a.id=? and b.id=c.group_id and a.id=c.user_id ",
+			input).
+		Find(&result)
+	return result
+}

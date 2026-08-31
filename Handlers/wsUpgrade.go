@@ -3,6 +3,7 @@ package Handlers
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"mygoim/DB"
 	"mygoim/WS"
 	"net/http"
 )
@@ -39,6 +40,17 @@ func WSUpgrade(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": "102", "msg": "Try Again!"})
 		c.Abort()
 		return
+	}
+	groups := DB.QueryMyGroup(userID.(uint))
+	for _, group := range groups {
+		if group.GroupName != "" {
+			err = ch.QueueBind(q.Name, group.GroupName, "group", false, nil)
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{"code": "102", "msg": "Try Again!"})
+				c.Abort()
+				return
+			}
+		}
 	}
 
 	//注册WS客户端连接

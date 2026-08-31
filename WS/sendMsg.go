@@ -8,12 +8,12 @@ import (
 
 func (c *Client) SendPrivate(msg Message) {
 	var frd DB.User
-	//判断是否为好友
+	// 判断是否为好友
 	userTo, _ := DB.QueryUser(msg.To)
 	if userTo.ID != 0 {
 		frd = DB.QueryFrd(msg.ID, userTo.ID)
 	}
-	//对方不是好友返回系统消息
+	// 对方不是好友返回系统消息
 	if frd.ID == 0 {
 		c.Hub.mu.RLock()
 		target, ok := c.Hub.Clients[msg.From]
@@ -28,9 +28,9 @@ func (c *Client) SendPrivate(msg Message) {
 		}
 		return
 	}
-	//对象是好友，publish到私聊交换机
+	// Publish到私聊交换机
 	err := c.PublishPrivate(msg)
-	//发送失败
+	// // Publish失败通知
 	if err != nil {
 		c.Hub.mu.RLock()
 		target, ok := c.Hub.Clients[msg.From]
@@ -47,14 +47,13 @@ func (c *Client) SendPrivate(msg Message) {
 	}
 }
 
-func (h *Hub) SendGroup(msg Message) {
-	//todo:
-	usersTo := DB.QueryMemberAll(msg.To)
-	for _, user := range usersTo {
-		data, _ := json.Marshal(msg)
-		h.mu.RLock()
-		target, ok := h.Clients[user.Name]
-		h.mu.RUnlock()
+func (c *Client) SendGroup(msg Message) {
+	// 判断发送者是否为群成员
+	if DB.QueryMember(msg.From, msg.To).ID == 0 {
+		c.Hub.mu.RLock()
+		target, ok := c.Hub.Clients[msg.From]
+		c.Hub.mu.RUnlock()
+		data, _ := json.Marshal(NewSystemMsg("你不是该群成员国", msg.From))
 		if ok {
 			select {
 			case target.Send <- data:
@@ -62,6 +61,24 @@ func (h *Hub) SendGroup(msg Message) {
 				close(target.Send)
 			}
 		}
+		return
+	}
+	// Publish到群聊交换机
+	err := c.PublishGroup(msg)
+	// Publish失败通知
+	if err != nil {
+		c.Hub.mu.RLock()
+		target, ok := c.Hub.Clients[msg.From]
+		c.Hub.mu.RUnlock()
+		data, _ := json.Marshal(NewSystemMsg("发送失败", msg.From))
+		if ok {
+			select {
+			case target.Send <- data:
+			default:
+				close(target.Send)
+			}
+		}
+		return
 	}
 }
 

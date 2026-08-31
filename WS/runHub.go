@@ -99,7 +99,7 @@ func (c *Client) ReadPump() {
 		case "private":
 			c.SendPrivate(msg)
 		case "group":
-			c.Hub.SendGroup(msg)
+			c.SendGroup(msg)
 		case "system":
 			c.Hub.Broadcast <- msg
 		}

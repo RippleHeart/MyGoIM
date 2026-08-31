@@ -15,6 +15,17 @@ func (c *Client) PublishPrivate(msg Message) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+func (c *Client) PublishGroup(msg Message) error {
+	data, _ := json.Marshal(msg)
+	err := c.MQCh.Publish("group", msg.To, false, false,
+		amqp091.Publishing{
+			Body: data,
+		})
+	if err != nil {
+		return err
+	}
 	fmt.Println("publish成功")
 	return nil
 }
