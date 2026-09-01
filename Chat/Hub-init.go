@@ -1,4 +1,4 @@
-package WS
+package Chat
 
 import (
 	"encoding/json"
@@ -78,6 +78,7 @@ func (c *Client) ReadPump() {
 	})
 
 	for {
+		log.Println("6")
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -88,6 +89,7 @@ func (c *Client) ReadPump() {
 
 		var msg Message
 		if err := json.Unmarshal(message, &msg); err != nil {
+			log.Println(err)
 			continue
 		}
 		msg.From = c.Name
@@ -97,6 +99,7 @@ func (c *Client) ReadPump() {
 		// 根据消息类型路由
 		switch msg.Type {
 		case "private":
+			log.Println("7")
 			c.SendPrivate(msg)
 		case "group":
 			c.SendGroup(msg)

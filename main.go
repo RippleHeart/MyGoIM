@@ -1,17 +1,17 @@
 package main
 
 import (
+	"mygoim/Chat"
 	"mygoim/Conf"
 	"mygoim/DB"
 	"mygoim/Routers"
-	"mygoim/WS"
 )
 
 func main() {
 	Conf.LoadConfig()
 	DB.InitMySQL()
 	DB.InitRedis()
-	WS.InitHub()
-	WS.InitMQ()
+	Chat.InitHub()
+	Chat.InitMQ()
 	Routers.InitRouters()
 }

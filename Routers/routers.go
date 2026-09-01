@@ -10,15 +10,16 @@ func InitRouters() {
 	Engine := gin.Default()
 	Engine.POST("/login", Handlers.Login)
 	Engine.POST("/register", Handlers.Register)
-	UserRG := Engine.Group("/user/:name", Handlers.VerifyJWT)
-	UserRG.Use()
+	UserRG := Engine.Group("/users/:name")
+	UserRG.Use(Handlers.VerifyJWT)
 	{
 		UserRG.GET("/friends", Handlers.GetFriends)
-		UserRG.POST("/friends", Handlers.AddFriend)
+		UserRG.GET("/friends/:friendname")
+		UserRG.POST("/friends/:friendname", Handlers.AddFriend)
 
-		UserRG.PATCH("/group/:groupname", Handlers.CreateGroup)
-		UserRG.POST("/group/:groupname", Handlers.EnterGroup)
-		UserRG.GET("/group/:groupname", Handlers.GetMembers)
+		UserRG.POST("/groups/:groupname", Handlers.CreateGroup)
+		UserRG.PATCH("/groups/:groupname", Handlers.EnterGroup)
+		UserRG.GET("/groups/:groupname", Handlers.GetMembers)
 		UserRG.GET("/hello", Handlers.Hello)
 		UserRG.GET("/chat", Handlers.WSUpgrade)
 	}

@@ -6,11 +6,9 @@ import (
 )
 
 type User struct {
-	ID         uint         `gorm:"primaryKey"`
-	Name       string       `gorm:"size:64;not null"`
-	Password   string       `gorm:"size:255;not null" json:"password,omitempty"`
-	UserInfo   *UserInfo    `gorm:"foreignKey:UserID;references:ID"  json:"-"`
-	GroupUsers []*GroupUser `gorm:"foreignKey:UserID" json:"-"`
+	ID       uint   `gorm:"primaryKey"`
+	Name     string `gorm:"size:64;not null"`
+	Password string `gorm:"size:255;not null" json:"password,omitempty"`
 }
 
 // 一对一附属信息（UserID 既是主键又是外键）
@@ -33,9 +31,8 @@ type Group struct {
 	GroupName string `gorm:"size:100;not null"`
 	OwnerID   uint   `gorm:"not null;comment:群主ID"`
 	OwnerName string `gorm:"size:100;not null"`
-	Owner     *User  `gorm:"foreignKey:OwnerID;references:ID"`
 
-	GroupUsers []*GroupUser `gorm:"foreignKey:GroupID"`
+	Owner *User `gorm:"foreignKey:OwnerID;references:ID"`
 }
 
 // 中间表
@@ -63,4 +60,22 @@ type GroupUser struct {
 	// 关联字段
 	Group *Group `gorm:"foreignKey:GroupID;references:ID"`
 	User  *User  `gorm:"foreignKey:UserID;references:ID"`
+}
+type GroupMessage struct {
+	ID      uint `gorm:"primaryKey"`
+	ToID    uint
+	FromID  uint
+	Content []byte
+
+	To   *Group `gorm:"foreignKey:ToID;references:ID"`
+	From *User  `gorm:"foreignKey:FromID;references:ID"`
+}
+type PrivateMessage struct {
+	ID      uint `gorm:"primaryKey"`
+	ToID    uint
+	FromID  uint
+	Content []byte
+
+	To   *User `gorm:"foreignKey:ToID;references:ID"`
+	From *User `gorm:"foreignKey:FromID;references:ID"`
 }

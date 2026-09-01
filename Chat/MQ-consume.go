@@ -1,4 +1,4 @@
-package WS
+package Chat
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func (c *Client) ConsumePrivate() error {
+func (c *Client) ConsumeMyQueue() error {
 	//消费就绪
 	msgs, err := c.MQCh.Consume(c.Name, "", false, false, false, false, nil)
 	if err != nil {
@@ -20,7 +20,7 @@ func (c *Client) ConsumePrivate() error {
 		case msg = <-msgs:
 			c.Send <- msg.Body
 			msg.Ack(false)
-
+			log.Println("consumed")
 		//监听客户端连接是否关闭
 		case <-c.Close:
 			fmt.Println("下线通知")

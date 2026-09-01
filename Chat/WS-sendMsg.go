@@ -1,7 +1,8 @@
-package WS
+package Chat
 
 import (
 	"encoding/json"
+	"log"
 	"mygoim/DB"
 	"time"
 )
@@ -30,7 +31,8 @@ func (c *Client) SendPrivate(msg Message) {
 	}
 	// Publish到私聊交换机
 	err := c.PublishPrivate(msg)
-	// // Publish失败通知
+	log.Println("published")
+	// Publish失败通知
 	if err != nil {
 		c.Hub.mu.RLock()
 		target, ok := c.Hub.Clients[msg.From]
@@ -45,6 +47,13 @@ func (c *Client) SendPrivate(msg Message) {
 		}
 		return
 	}
+	//持久化到MySQL
+	data, _ := json.Marshal(msg)
+	err = DB.InsertMsg(msg.ID, frd.ID, msg.Type, data)
+	if err != nil {
+		//todo 持久化失败原因及处理
+		return
+	}
 }
 
 func (c *Client) SendGroup(msg Message) {
@@ -53,7 +62,7 @@ func (c *Client) SendGroup(msg Message) {
 		c.Hub.mu.RLock()
 		target, ok := c.Hub.Clients[msg.From]
 		c.Hub.mu.RUnlock()
-		data, _ := json.Marshal(NewSystemMsg("你不是该群成员国", msg.From))
+		data, _ := json.Marshal(NewSystemMsg("你不是该群成员", msg.From))
 		if ok {
 			select {
 			case target.Send <- data:
@@ -78,6 +87,14 @@ func (c *Client) SendGroup(msg Message) {
 				close(target.Send)
 			}
 		}
+		return
+	}
+	//持久化到数据库
+	group := DB.QueryGroupID(msg.To)
+	data, _ := json.Marshal(msg)
+	err = DB.InsertMsg(msg.ID, group.ID, msg.Type, data)
+	if err != nil {
+		//todo 持久化失败原因及处理
 		return
 	}
 }

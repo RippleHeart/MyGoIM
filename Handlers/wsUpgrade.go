@@ -3,17 +3,17 @@ package Handlers
 import (
 	"github.com/gin-gonic/gin"
 	"log"
+	"mygoim/Chat"
 	"mygoim/DB"
-	"mygoim/WS"
 	"net/http"
 )
 
 func WSUpgrade(c *gin.Context) {
 	//升级HTTP为WS
-	conn, err := WS.Upgrader.Upgrade(c.Writer, c.Request, nil)
+	conn, err := Chat.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusOK, gin.H{"code": "102", "msg": "WS UP ERROR!"})
+		c.JSON(http.StatusOK, gin.H{"code": "102", "msg": "Chat UP ERROR!"})
 		c.Abort()
 		return
 	}
@@ -21,7 +21,7 @@ func WSUpgrade(c *gin.Context) {
 	userID, _ := c.Get("ID")
 	userName, _ := c.Get("name")
 	//创建AMQP信道
-	ch, err := WS.NewChannel()
+	ch, err := Chat.NewChannel()
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": "102", "msg": "Try Again!"})
 		c.Abort()
@@ -54,21 +54,24 @@ func WSUpgrade(c *gin.Context) {
 	}
 
 	//注册WS客户端连接
-	client := &WS.Client{
+	client := &Chat.Client{
 		Close: make(chan struct{}),
 		ID:    userID.(uint),
 		Name:  userName.(string),
 		MQCh:  ch,
 		Queue: q,
-		Hub:   WS.H,
+		Hub:   Chat.H,
 		Conn:  conn,
 		Send:  make(chan []byte, 256),
 	}
 	client.Hub.Register <- client
 
 	//开辟 读+写goroutine、消费消息的goroutine
+	log.Println("1")
 	go client.WritePump()
+	log.Println("2")
 	go client.ReadPump()
-	go client.ConsumePrivate()
+	log.Println("3")
+	go client.ConsumeMyQueue()
 
 }
