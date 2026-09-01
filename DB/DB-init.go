@@ -10,22 +10,24 @@ import (
 	"mygoim/Conf"
 )
 
+var MySQL *gorm.DB
+var RDB *redis.Client
+
 func InitRedis() {
-	rdb := redis.NewClient(&redis.Options{
+	RDB = redis.NewClient(&redis.Options{
 		Addr:     Conf.Conf.R.Addr,
 		Password: Conf.Conf.R.Password,
 		DB:       Conf.Conf.R.DB,
 		PoolSize: Conf.Conf.R.PoolSize,
 	})
 
-	pong, err := rdb.Ping(context.Background()).Result()
+	_, err := RDB.Ping(context.Background()).Result()
 	if err != nil {
 		log.Fatal("Redis连接失败:", err)
 	}
-	log.Println("Redis连接成功:", pong)
-}
+	log.Println("Redis连接成功:")
 
-var MySQL *gorm.DB
+}
 
 func InitMySQL() {
 	var err error

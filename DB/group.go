@@ -18,7 +18,6 @@ func QueryGroupID(input string) Group {
 
 func QueryMyGroup(input uint) []Group {
 	var result []Group
-
 	MySQL.
 		Raw("select b.group_name, b.id from users a,`groups` b,group_users c where c.break=0 and a.id=? and b.id=c.group_id and a.id=c.user_id ",
 			input).

@@ -19,7 +19,7 @@ func InsertFrd(ID, frdID uint) error {
 func QueryFrdAll(userID uint) []User {
 	var result []User
 	MySQL.
-		Raw("select b.name, b.id from users a,users b,user_users c where c.break=0 and a.id=? and ((a.id=c.active_id and b.id =c.passive_id) or  (b.id=c.active_id and a.id =c.passive_id))", userID).
+		Raw("select b.name, b.id, b.last_online from users a,users b,user_users c where c.break=0 and a.id=? and ((a.id=c.active_id and b.id =c.passive_id) or  (b.id=c.active_id and a.id =c.passive_id))", userID).
 		Find(&result)
 	return result
 }

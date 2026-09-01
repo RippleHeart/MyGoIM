@@ -4,12 +4,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"mygoim/DB"
 	"net/http"
+	"time"
 )
 
 func GetFriends(c *gin.Context) {
 	userID, _ := c.Get("ID")
-	result := DB.QueryFrdAll(userID.(uint))
-	c.JSON(http.StatusOK, gin.H{"code": "003", "msg": "successfully!", "friends": result})
+	results := DB.QueryFrdAll(userID.(uint))
+	for index := range results {
+		if DB.CheckOnline(results[index].Name) {
+			results[index].Online = 1
+			results[index].LastOnline = *new(time.Time)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"code": "003", "msg": "successfully!", "friends": results})
 }
 
 func AddFriend(c *gin.Context) {
