@@ -12,6 +12,12 @@ var H *Hub
 
 func InitHub() {
 	H = NewHub()
+	H.ClientPool.New = func() any {
+		H.mu.Lock()
+		defer H.mu.Unlock()
+		c := new(Client)
+		return c
+	}
 	go H.Run()
 	log.Println("WS集中管理器Hub创建成功")
 }
@@ -73,7 +79,7 @@ func (c *Client) ReadPump() {
 	})
 
 	for {
-		log.Println("6")
+
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -94,7 +100,6 @@ func (c *Client) ReadPump() {
 		// 根据消息类型路由
 		switch msg.Type {
 		case "private":
-			log.Println("7")
 			c.SendPrivate(msg)
 		case "group":
 			c.SendGroup(msg)
@@ -137,5 +142,5 @@ func OfflineHandler(client *Client) {
 	DB.SetLastOnline(client.ID)             //设置下线时间
 	delete(client.Hub.Clients, client.Name) //从Hub中删除对应Client连接
 	close(client.Send)                      //关闭发送消息发送通道
-
+	H.ClientPool.Put(client)                //将client实例放回池
 }

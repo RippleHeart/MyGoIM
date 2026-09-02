@@ -34,6 +34,7 @@ type Hub struct {
 	Unregister chan *Client       // 连接断开Chan
 	Broadcast  chan Message       // 广播消息Chan
 	mu         sync.RWMutex       // 保护 Clients 集合
+	ClientPool sync.Pool
 }
 
 var Upgrader = websocket.Upgrader{

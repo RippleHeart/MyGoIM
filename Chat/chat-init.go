@@ -33,17 +33,16 @@ func InitChat(userName string, userID uint, conn *websocket.Conn) error {
 		}
 	}
 
-	//注册WS客户端连接
-	client := &Client{
-		Close: make(chan struct{}),
-		ID:    userID,
-		Name:  userName,
-		MQCh:  ch,
-		Queue: q,
-		Hub:   H,
-		Conn:  conn,
-		Send:  make(chan []byte, 256),
-	}
+	// 从对象池中Get一个Client实例注册，加入Hub管理
+	client := H.ClientPool.Get().(*Client)
+	client.Close = make(chan struct{})
+	client.ID = userID
+	client.Name = userName
+	client.MQCh = ch
+	client.Queue = q
+	client.Hub = H
+	client.Conn = conn
+	client.Send = make(chan []byte, 256)
 	client.Hub.Register <- client
 	//Redis进行缓存上线记录
 	DB.SetOnline(userName)

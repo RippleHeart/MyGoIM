@@ -1,7 +1,6 @@
 package Chat
 
 import (
-	"fmt"
 	"github.com/rabbitmq/amqp091-go"
 	"log"
 )
@@ -20,12 +19,9 @@ func (c *Client) ConsumeMyQueue() error {
 		case msg = <-msgs:
 			c.Send <- msg.Body
 			msg.Ack(false)
-			log.Println("consumed")
 		//监听客户端连接是否关闭
 		case <-c.Close:
-			fmt.Println("下线通知")
 			return nil
-
 		//返回NACK 处理失败，重新入队
 		default:
 			if msg.DeliveryTag == 0 {
