@@ -9,7 +9,7 @@ type User struct {
 	ID         uint      `gorm:"primaryKey"`
 	Name       string    `gorm:"size:64;not null"`
 	Online     int       `gorm:"-"`
-	LastOnline time.Time `gorm:"type:datetime"`
+	LastOnline time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 	Password   string    `gorm:"size:255;not null" json:"password,omitempty"`
 }
 
@@ -33,7 +33,7 @@ type Group struct {
 	OwnerID   uint   `gorm:"not null;comment:群主ID"`
 	OwnerName string `gorm:"size:100;not null"`
 
-	Owner *User `gorm:"foreignKey:OwnerID;references:ID"`
+	Owner *User `gorm:"foreignKey:OwnerID;references:ID" json:"-"`
 }
 
 type UserUser struct {
@@ -54,8 +54,8 @@ type GroupUser struct {
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime"`
 
-	Group *Group `gorm:"foreignKey:GroupID;references:ID"`
-	User  *User  `gorm:"foreignKey:UserID;references:ID"`
+	Group *Group `gorm:"foreignKey:GroupID;references:ID" json:"-"`
+	User  *User  `gorm:"foreignKey:UserID;references:ID" json:"-"`
 }
 type GroupMessage struct {
 	ID      uint `gorm:"primaryKey"`
@@ -63,8 +63,8 @@ type GroupMessage struct {
 	FromID  uint
 	Content []byte
 
-	To   *Group `gorm:"foreignKey:ToID;references:ID"`
-	From *User  `gorm:"foreignKey:FromID;references:ID"`
+	To   *Group `gorm:"foreignKey:ToID;references:ID"  json:"-"`
+	From *User  `gorm:"foreignKey:FromID;references:ID"  json:"-"`
 }
 type PrivateMessage struct {
 	ID      uint `gorm:"primaryKey"`
@@ -72,6 +72,6 @@ type PrivateMessage struct {
 	FromID  uint
 	Content []byte
 
-	To   *User `gorm:"foreignKey:ToID;references:ID"`
-	From *User `gorm:"foreignKey:FromID;references:ID"`
+	To   *User `gorm:"foreignKey:ToID;references:ID" json:"-"`
+	From *User `gorm:"foreignKey:FromID;references:ID" json:"-"`
 }

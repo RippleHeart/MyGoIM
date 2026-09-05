@@ -42,17 +42,17 @@ func InitMySQL() {
 	log.Println("MySQL连接成功")
 	sqlDB.SetMaxIdleConns(Conf.Conf.M.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(Conf.Conf.M.MaxOpenConns)
-	err = MySQL.AutoMigrate(
-		&User{},
-		&UserInfo{},
-		&Group{},
-		&UserUser{},
-		&GroupUser{},
-		&GroupMessage{},
-		&PrivateMessage{},
-	)
-	if err != nil {
-		log.Fatal("建表失败:", err)
-	}
+	//err = MySQL.AutoMigrate(
+	//	&User{},
+	//	&UserInfo{},
+	//	&Group{},
+	//	&UserUser{},
+	//	&GroupUser{},
+	//	&GroupMessage{},
+	//	&PrivateMessage{},
+	//)
+	//if err != nil {
+	//	log.Fatal("建表失败:", err)
+	//}
 
 }

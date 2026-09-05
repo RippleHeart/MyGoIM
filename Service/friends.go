@@ -1,4 +1,4 @@
-package Handlers
+package Service
 
 import (
 	"github.com/gin-gonic/gin"

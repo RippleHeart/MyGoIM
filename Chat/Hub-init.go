@@ -96,7 +96,7 @@ func (c *Client) ReadPump() {
 		msg.From = c.Name
 		msg.ID = c.ID
 		msg.Timestamp = time.Now().Unix()
-
+		DB.MsgNumPlus()
 		// 根据消息类型路由
 		switch msg.Type {
 		case "private":
@@ -136,9 +136,10 @@ func (c *Client) WritePump() {
 	}
 }
 func OfflineHandler(client *Client) {
-	close(client.Close)                     //关闭通道，通知子协程死亡
-	client.MQCh.Close()                     //关闭AMQP信道，防止出现僵尸消费者
-	DB.SetOffline(client.Name)              //删除Redis缓存中在线记录
+	close(client.Close)        //关闭通道，通知子协程死亡
+	client.MQCh.Close()        //关闭AMQP信道，防止出现僵尸消费者
+	DB.SetOffline(client.Name) //删除Redis缓存中在线记录
+	//DB.RDB.Decr(context.TODO(),"")
 	DB.SetLastOnline(client.ID)             //设置下线时间
 	delete(client.Hub.Clients, client.Name) //从Hub中删除对应Client连接
 	close(client.Send)                      //关闭发送消息发送通道

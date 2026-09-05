@@ -1,10 +1,11 @@
 package main
 
 import (
+	"log"
+	"mygoim/API"
 	"mygoim/Chat"
 	"mygoim/Conf"
 	"mygoim/DB"
-	"mygoim/Routers"
 )
 
 func main() {
@@ -13,5 +14,15 @@ func main() {
 	DB.InitRedis()
 	Chat.InitHub()
 	Chat.InitMQ()
-	Routers.InitRouters()
+	API.InitRouters()
+	go func() {
+		err := API.UserEngine.Run(Conf.UserAddr)
+		if err != nil {
+			log.Fatal("Engine.Run: ", err)
+		}
+	}()
+	err := API.AdminEngine.Run(Conf.AdminAddr)
+	if err != nil {
+		log.Fatal("Engine.Run: ", err)
+	}
 }

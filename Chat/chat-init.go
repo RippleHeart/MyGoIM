@@ -1,7 +1,6 @@
 package Chat
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"mygoim/DB"
 )
@@ -46,9 +45,7 @@ func InitChat(userName string, userID uint, conn *websocket.Conn) error {
 	client.Hub.Register <- client
 	//Redis进行缓存上线记录
 	DB.SetOnline(userName)
-	fmt.Println(DB.CheckOnline(userName))
-	fmt.Println(DB.CheckOnline("userName"))
-	fmt.Println(DB.CheckOnline("123"))
+
 	//开辟 读+写goroutine、消费消息的goroutine
 	go client.WritePump()
 	go client.ReadPump()

@@ -7,11 +7,17 @@ import (
 )
 
 type Config struct {
-	M  MySQLConfig `mapstructure:"mysql"`
-	R  RedisConfig `mapstructure:"redis"`
-	J  JWTConfig   `mapstructure:"JWT"`
-	W  WSConfig    `mapstructure:"WS"`
-	MQ MQConfig    `mapstructure:"rabbitMQ"`
+	M   MySQLConfig `mapstructure:"mysql"`
+	R   RedisConfig `mapstructure:"redis"`
+	J   JWTConfig   `mapstructure:"JWT"`
+	W   WSConfig    `mapstructure:"WS"`
+	MQ  MQConfig    `mapstructure:"rabbitMQ"`
+	Web WebConfig   `mapstructure:"web"`
+}
+type WebConfig struct {
+	Host      string `mapstructure:"host"`
+	UserPort  string `mapstructure:"userport"`
+	AdminPort string `mapstructure:"adminport"`
 }
 type MQConfig struct {
 	Host     string `mapstructure:"host"`
@@ -46,6 +52,8 @@ type RedisConfig struct {
 var Conf Config
 var DSN string
 var MQURL string
+var UserAddr string
+var AdminAddr string
 
 func LoadConfig() {
 	viper.SetConfigName("config")
@@ -62,5 +70,7 @@ func LoadConfig() {
 
 	DSN = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", Conf.M.User, Conf.M.Password, Conf.M.Host, Conf.M.Port, Conf.M.DB)
 	MQURL = fmt.Sprintf("amqp://%s:%s@%s:%s/", Conf.MQ.User, Conf.MQ.Password, Conf.MQ.Host, Conf.MQ.Port)
+	UserAddr = fmt.Sprintf("%s:%s", Conf.Web.Host, Conf.Web.UserPort)
+	AdminAddr = fmt.Sprintf("%s:%s", Conf.Web.Host, Conf.Web.AdminPort)
 	log.Println("读取配置成功")
 }

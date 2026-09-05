@@ -1,3 +1,8 @@
+web:
+  host: 127.0.0.1
+  userport: 8080
+  adminport: 8081
+
 mysql:
   user: root
   password: "006620"
@@ -26,3 +31,5 @@ rabbitMQ:
   port: 5672
   user: guest
   password: guest
+
+maxWorker: 200

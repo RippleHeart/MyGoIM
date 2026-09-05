@@ -1,4 +1,4 @@
-package Handlers
+package Service
 
 import (
 	"github.com/gin-gonic/gin"
@@ -50,9 +50,19 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": "100", "error": "Try again3!"})
 		return
 	}
+	user, err := DB.QueryUser(postform.Username)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": "100", "error": "Try again4!"})
+		return
+	}
+	err = DB.InsertUserInfo(user.ID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": "100", "error": "Try again5!"})
+		return
+	}
 	token := postform.CreateJWT()
 	if token == "" {
-		c.JSON(http.StatusOK, gin.H{"code": "100", "msg": "Try again4!"})
+		c.JSON(http.StatusOK, gin.H{"code": "100", "msg": "Try again6!"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": "000", "msg": "Register successfully!", "token": token})
